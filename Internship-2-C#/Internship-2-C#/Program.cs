@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Reflection.Metadata;
-using System.Xml.Linq;
 
 var users = new Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)>();
 var trips = new Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)>();
 
 users[1] = ("Marijan", "Mastelić", new DateTime(2002, 10, 10), new List<int>());
-users[2] = ("Vatroslav", "Mastelić", new DateTime(2002, 10, 10), new List<int>());
+users[2] = ("Vatroslav", "Aastelić", new DateTime(2002, 10, 10), new List<int>());
 users[3] = ("Lucija", "Pavić", new DateTime(2000, 10, 12), new List<int>());
 
 trips[1] = (new DateTime(2025, 11, 11), 200, 18m, 1.49m, 18m * 1.49m);
@@ -34,7 +32,6 @@ while (true)
         Console.WriteLine("Zasad nema nista.");
     else if (choice == "0") break;
 }
-
 void usersMenu()
 {
     while (true)
@@ -42,17 +39,86 @@ void usersMenu()
         Console.WriteLine("\n1 - Unos novog korisnika");
         Console.WriteLine("2 - Brisanje korisnika");
         Console.WriteLine("3 - Uređivanje korisnika");
+        Console.WriteLine("4 - Pregled svih korisnika");
         Console.WriteLine("0 - Povratak na glavni izbornik");
         Console.Write("\nOdabir: ");
         var userMenuChoice = Console.ReadLine();
         if (userMenuChoice == "1") addUser(users);
         else if (userMenuChoice == "2") deleteUserMenu();
-        else if(userMenuChoice == "3") modifyUser(users);
+        else if (userMenuChoice == "3") modifyUser(users);
+        else if (userMenuChoice == "4") showUsersMenu();
         else if (userMenuChoice == "0") break;     
     }
     return;
 }
+void showUsersMenu()
+{   
+    Console.WriteLine("\n1 - Ispis korisnika abecedno po prezimenu");
+    Console.WriteLine("2 - Ispis svih korisnika koji imaju više od 20 godina");
+    Console.WriteLine("3 - Ispis svih korisnika koji imaju bar 2 putovanja");
+    Console.Write("\nOdabir: ");
+    var showChoice = Console.ReadLine();
+    if (showChoice == "1") printUsersBySurname(users);
+    else if(showChoice == "2") printUsersOverTwenty(users);
+    else if( showChoice == "3") printUsersWithTrips(users);
+}
+void printUsersWithTrips(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Clear();
+    Console.WriteLine("Popis korisnika koji imaju bar 2 putovanja: ");
+    foreach (var user in users)
+    {
+        int tripsNumber = user.Value.tripsID.Count();
+        if(tripsNumber >= 2)
+            Console.WriteLine($"{user.Key} - {user.Value.name} - {user.Value.surname} - {user.Value.birthDate:yyyy-MM-dd}");
+    }
 
+    Console.Write("\nPritisni bilo kou tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+
+}
+void printUsersOverTwenty(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Clear();
+    Console.WriteLine("Popis korisnika koji imaju više od dvadeset godina:");
+    DateTime currentDate = DateTime.Today;
+
+    foreach (var user in users)
+    {
+        int userAge = currentDate.Year - user.Value.birthDate.Year;
+        if (currentDate.Month < user.Value.birthDate.Month || (currentDate.Month == user.Value.birthDate.Month && currentDate.Day < user.Value.birthDate.Day))
+            userAge--;
+
+        if (userAge > 20)
+            Console.WriteLine($"{user.Key} - {user.Value.name} - {user.Value.surname} - {user.Value.birthDate:yyyy-MM-dd}");
+    }
+        
+    Console.Write("Pritisni bilo kou tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+}
+void printUsersBySurname(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Clear();
+    Console.WriteLine("Popis korisnika abecedno po prezimenu:\n");
+    var usersList = users.ToList();
+
+    usersList.Sort((x, y) =>
+    {
+        int surnameCompare = x.Value.surname.CompareTo(y.Value.surname);
+        if(surnameCompare == 0)
+            return x.Value.name.CompareTo(y.Value.name);
+        return surnameCompare;
+    });
+
+    foreach(var user in usersList)
+        Console.WriteLine($"{user.Key} - {user.Value.name} - {user.Value.surname} - {user.Value.birthDate:yyyy-MM-dd}");
+
+    Console.Write("\nPritisni bilo koju tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+}
 void modifyUser(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
 {
     Console.Write("\nUpiši ID korisnika kojeg želiš urediti: ");
@@ -102,19 +168,17 @@ void modifyUser(Dictionary<int, (string name, string surname, DateTime birthDate
     }
     else Console.WriteLine("Unos ID-ja neispravan.");
 
-
     Console.Write("Pritisni bilo koju tipku za nastavak...");
     Console.ReadKey();
     Console.Clear();
 }
-
 void deleteUserMenu()
 {
     while (true)
     {
         Console.WriteLine("\n1 - Brisanje korisnika po ID-u.");
         Console.WriteLine("2 - Brisanje korisnika po imenu i prezimenu.");
-        Console.WriteLine("0 - Povratak na menu korisnika.");
+        Console.WriteLine("0 - Povratak na izbornik korisnika.");
         Console.Write("\nOdabir: ");
         var deleteChoice = Console.ReadLine();
         if (deleteChoice == "1")
