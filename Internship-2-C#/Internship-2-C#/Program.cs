@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Reflection.Metadata;
 
 var users = new Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)>();
 var trips = new Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)>();
 
-users[1] = ("Marijan", "Mastelic", new DateTime(2002, 10, 10), new List<int>());
-users[2] = ("Vatroslav", "Mastelic", new DateTime(2002, 10, 10), new List<int>());
+users[1] = ("Marijan", "Mastelić", new DateTime(2002, 10, 10), new List<int>());
+users[2] = ("Vatroslav", "Mastelić", new DateTime(2002, 10, 10), new List<int>());
 users[3] = ("Lucija", "Pavić", new DateTime(2000, 10, 12), new List<int>());
 
 trips[1] = (new DateTime(2025, 11, 11), 200, 18m, 1.49m, 18m * 1.49m);
@@ -38,15 +39,96 @@ void usersMenu()
     while (true)
     {
         Console.WriteLine("\n1 - Unos novog korisnika");
+        Console.WriteLine("2 - Brisanje korisnika");
         Console.WriteLine("0 - Povratak na glavni izbornik");
         Console.Write("\nOdabir: ");
         var userMenuChoice = Console.ReadLine();
         if (userMenuChoice == "1") addUser(users);
-        else if (userMenuChoice == "0") break;
+        else if (userMenuChoice == "2") deleteUserMenu();
+        else if (userMenuChoice == "0") break;     
     }
     return;
 }
 
+void deleteUserMenu()
+{
+    while (true)
+    {
+        Console.WriteLine("\n1 - Brisanje korisnika po ID-u.");
+        Console.WriteLine("2 - Brisanje korisnika po imenu i prezimenu.");
+        Console.WriteLine("0 - Povratak na menu korisnika.");
+        Console.Write("\nOdabir: ");
+        var deleteChoice = Console.ReadLine();
+        if (deleteChoice == "1")
+        {
+            deleteUserID(users);
+            break;
+        }
+        else if (deleteChoice == "2")
+        {
+            deleteUserNameSurname(users);
+            break;
+        }
+        else if (deleteChoice == "0") break;
+    }
+}
+
+void deleteUserNameSurname(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Write("Upiši ime korisnika kojeg želiš izbrisati: ");
+    string name = Console.ReadLine();
+    Console.Write("Upiši prezime korisnika kojeg želiš izbrisati: ");
+    string surname = Console.ReadLine();
+    bool userFound = false;
+    foreach(var user in users)
+    {
+        if (user.Value.name.Equals(name, StringComparison.OrdinalIgnoreCase) && user.Value.surname.Equals(surname, StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Jesi li siguran da želiš izbrisati korisnika {user.Value.name} {user.Value.surname}?");
+            Console.Write("(da/ne): ");
+            var confirm = Console.ReadLine();
+            if (confirm?.ToLower() == "da")
+            {
+
+                users.Remove(user.Key);
+                Console.Clear();
+                Console.WriteLine($"Korisnik obrisan.");
+            }
+            else Console.WriteLine("Brisanje otkazano");
+            userFound = true;
+            break;
+        }
+    }
+    if (!userFound)
+        Console.WriteLine("Ne postoji korisnik s tim imenom i prezimenom.");
+
+}
+void deleteUserID(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Write("Upiši ID korisnika kojeg želiš izbrisati: ");
+    if (int.TryParse(Console.ReadLine(), out int userID))
+    {
+        if (users.ContainsKey(userID))
+        {
+            var user = users[userID];
+            Console.WriteLine($"Jesi li siguran da želiš izbrisati korisnika {user.name} {user.surname}?");
+            Console.Write("(da/ne): ");
+            var confirm = Console.ReadLine();
+            if (confirm?.ToLower() == "da")
+            {
+                users.Remove(userID);
+                Console.Clear();
+                Console.WriteLine($"Korisnik {user.name} {user.surname} obrisan.");
+            }
+            else Console.WriteLine("Brisanje otkazano");
+        }
+        else Console.WriteLine("Korisnik s tim ID-jem ne postoji.");
+    }
+    else Console.WriteLine("Neispravan unos ID-ja.");
+
+    Console.WriteLine("Pritisni bilo koju tipku za nastavak...");
+    Console.ReadKey();
+}
 void addUser(Dictionary<int, (string name, string surname, DateTime birthDate, List<int>tripsID)> users)
 {
     string name;
