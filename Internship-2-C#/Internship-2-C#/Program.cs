@@ -299,10 +299,12 @@ void tripsMenu()
     while (true)
     {
         Console.WriteLine("\n1 - Unos novog putovanja");
+        Console.WriteLine("2 - Brisanje putovanja");
         Console.WriteLine("0 - Povratak na glavni izbornik");
         Console.Write("\nOdabir: ");
         var tripsMenuChoice = Console.ReadLine();
         if (tripsMenuChoice == "1") addTrip(trips, users);
+        if (tripsMenuChoice == "2") deleteTripsMenu();
         else if (tripsMenuChoice == "0") break;
     }
     return;
@@ -367,6 +369,57 @@ void addTrip(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, dec
     trips[newID] = (tripDate, distance, fuel, fuelPricePerLiter, totalCost);
     Console.WriteLine("Novo putovanje dodano.");
     Console.Write("Pristisnite bilo koju tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+}
+void deleteTripsMenu()
+{
+    while (true)
+    {
+        Console.WriteLine("\n1 - Brisanje putovanja po ID-u.");
+        Console.WriteLine("2 - Brisanje putovanja skupljih od nekog iznosa.");
+        Console.WriteLine("3 - Brisanje putovanja jeftinijih od nekog iznosa.");
+        Console.Write("\nOdabir: ");
+        var deleteChoice = Console.ReadLine();
+        if (deleteChoice == "1")
+        {
+            deleteTripID(trips, users);
+            break;
+        }
+        else if (deleteChoice == "0") break;
+    }
+}
+void deleteTripID(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)> trips,
+    Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Write("Upiši ID putovanja koje želiš izbrisati: ");
+    if (int.TryParse(Console.ReadLine(), out int tripID))
+    {
+        if (trips.ContainsKey(tripID))
+        {
+            var trip = trips[tripID];
+            Console.WriteLine($"Jesi li siguran da želiš izbrisati putovanje dugo {trip.distance} km?");
+            Console.Write("(da/ne): ");
+            var confirm = Console.ReadLine();
+            if (confirm?.ToLower() == "da")
+            {
+                foreach (var user in users)
+                    if (user.Value.tripsID.Contains(tripID))
+                    {
+                        user.Value.tripsID.Remove(tripID);
+                        break;
+                    }
+
+                trips.Remove(tripID);
+                Console.WriteLine($"Putovanje obrisano.");
+            }
+            else Console.WriteLine("Brisanje otkazano");
+        }
+        else Console.WriteLine("Putovanje s tim ID-jem ne postoji.");
+    }
+    else Console.WriteLine("Neispravan unos ID-ja.");
+
+    Console.Write("Pritisni bilo koju tipku za nastavak...");
     Console.ReadKey();
     Console.Clear();
 }
