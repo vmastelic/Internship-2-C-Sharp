@@ -300,11 +300,13 @@ void tripsMenu()
     {
         Console.WriteLine("\n1 - Unos novog putovanja");
         Console.WriteLine("2 - Brisanje putovanja");
+        Console.WriteLine("3 - Uređivanje putovanja");
         Console.WriteLine("0 - Povratak na glavni izbornik");
         Console.Write("\nOdabir: ");
         var tripsMenuChoice = Console.ReadLine();
         if (tripsMenuChoice == "1") addTrip(trips, users);
-        if (tripsMenuChoice == "2") deleteTripsMenu();
+        else if (tripsMenuChoice == "2") deleteTripsMenu();
+        else if(tripsMenuChoice == "3") modifyTrip(trips);
         else if (tripsMenuChoice == "0") break;
     }
     return;
@@ -399,7 +401,6 @@ void deleteTripsMenu()
         else if (deleteChoice == "0") break;
     }
 }
-
 void deleteTripsByCost(
     Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)> trips,
     Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users,
@@ -492,6 +493,75 @@ void deleteTripID(Dictionary<int, (DateTime tripDate, int distance, decimal fuel
         else Console.WriteLine("Putovanje s tim ID-jem ne postoji.");
     }
     else Console.WriteLine("Neispravan unos ID-ja.");
+
+    Console.Write("Pritisni bilo koju tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+}
+void modifyTrip(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)> trips)
+{
+    Console.Write("\nUpiši ID putovanja kojeg želiš urediti: ");
+    if (int.TryParse(Console.ReadLine(), out int tripID))
+    {
+        if (!trips.ContainsKey(tripID))
+        {
+            Console.WriteLine("Putovanje s tim ID-jem ne postoji.");
+            Console.WriteLine("Pritisni bilo koju tipku za dalje...");
+            Console.ReadKey();
+            Console.Clear();
+            return;
+        }
+
+        var trip = trips[tripID];
+
+        DateTime newTripDate = trip.tripDate;
+        int newDistance = trip.distance;
+        decimal newFuel = trip.fuel;
+        decimal newFuelPricePerLiter = trip.fuelPricePerLiter;
+        decimal newTotalCost = trip.totalCost;
+
+        Console.WriteLine("\nTrenutni podaci o putovanju:");
+        Console.WriteLine($"Datum: {trip.tripDate:yyyy-MM-dd}");
+        Console.WriteLine($"Dužina: {trip.distance}km");
+        Console.WriteLine($"Gorivo potrošeno: {trip.fuel} L");
+        Console.WriteLine($"Cijena goriva po litri: {trip.fuelPricePerLiter} EUR/L");
+        Console.WriteLine($"Ukupni trošak: {trip.totalCost} EUR");
+
+        Console.Write("Unesi novi datum putovanja (YYYY-MM-DD) ili Enter za ostavit isto: ");
+        string newDateInput = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newDateInput) && DateTime.TryParse(newDateInput, out DateTime parsedDate))
+        {
+            if (parsedDate.Year >= 1925 && parsedDate.Year <= 2025)
+                newTripDate = parsedDate;
+            else Console.WriteLine("Datum ne smije biti ranije od 1925 i nakon 2025!");
+        }
+
+        Console.Write("\nUnesi novu udaljenost ili Enter za zadržavanje stare: ");
+        string newDistanceInput = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newDistanceInput) && int.TryParse(newDistanceInput, out int parsedDistance))
+            newDistance = parsedDistance;
+
+        Console.Write("\nUnesi novu količinu goriva ili Enter za zadržavanje stare: ");
+        string newFuelInput = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newFuelInput) && decimal.TryParse(newFuelInput, out decimal parsedFuel))
+            newFuel = parsedFuel;
+
+        Console.Write("\nUnesi novu cijenu goriva po litri ili Enter za zadržavanje stare: ");
+        string newFuelPriceInput = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newFuelPriceInput) && decimal.TryParse(newFuelPriceInput, out decimal parsedFuelPrice))
+            newFuelPricePerLiter = parsedFuelPrice;
+
+        newTotalCost = newFuel * newFuelPricePerLiter;
+
+        trips[tripID] = (newTripDate, newDistance, newFuel, newFuelPricePerLiter, newTotalCost);
+        Console.WriteLine("\nPutovanje uspješno ažurirano:");
+        Console.WriteLine($"Datum: {newTripDate:yyyy-MM-dd}");
+        Console.WriteLine($"Dužina: {newDistance} km");
+        Console.WriteLine($"Gorivo: {newFuel} L");
+        Console.WriteLine($"Cijena goriva: {newFuelPricePerLiter} EUR/L");
+        Console.WriteLine($"Ukupni trošak: {newTotalCost} EUR");
+    }
+    else Console.WriteLine("Unos ID-ja neispravan.");
 
     Console.Write("Pritisni bilo koju tipku za nastavak...");
     Console.ReadKey();
