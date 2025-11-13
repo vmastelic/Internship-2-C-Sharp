@@ -28,8 +28,7 @@ while (true)
 
     var choice = Console.ReadLine();
     if (choice == "1") usersMenu();
-    else if (choice == "2")
-        Console.WriteLine("Zasad nema nista.");
+    else if (choice == "2") tripsMenu();
     else if (choice == "0") break;
 }
 void usersMenu()
@@ -290,6 +289,83 @@ void addUser(Dictionary<int, (string name, string surname, DateTime birthDate, L
     int newID = users.Keys.Max() + 1;
     users[newID] = (name, surname, birthDate, new List<int>());
     Console.WriteLine($"Korisnik {name} {surname} uspješno dodan (ID:{newID}).\n");
+    Console.Write("Pristisnite bilo koju tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+}
+
+void tripsMenu()
+{
+    while (true)
+    {
+        Console.WriteLine("\n1 - Unos novog putovanja");
+        Console.WriteLine("0 - Povratak na glavni izbornik");
+        Console.Write("\nOdabir: ");
+        var tripsMenuChoice = Console.ReadLine();
+        if (tripsMenuChoice == "1") addTrip(trips, users);
+        else if (tripsMenuChoice == "0") break;
+    }
+    return;
+}
+void addTrip(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)> trips,
+    Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    int userID;
+    while (true)
+    {
+        Console.Write("Unesi ID korisnika čije je putovanje: ");
+        if (int.TryParse(Console.ReadLine(), out userID) && users.ContainsKey(userID)) 
+            break;
+        Console.WriteLine("Ne postoji korisnik s tim ID-jem.");
+    }
+    int newID = trips.Keys.Max() + 1;
+    users[userID].tripsID.Add(newID);
+
+    DateTime tripDate;
+    while (true)
+    {
+        Console.Write("Unesi datum novog putovanja u obliku (YYYY-MM-DD): ");
+        if (DateTime.TryParse(Console.ReadLine(), out tripDate))
+        {
+            if (tripDate.Year > 2025 || tripDate.Year < 1925)
+            {
+                Console.WriteLine("Datum putovanja ne smije biti ranije od 1925 i nakon 2025!");
+                continue;
+            }
+            break;
+        }
+        Console.WriteLine("Neispravan format datuma!\n");
+    }
+    int distance;
+    while (true)
+    {
+        Console.Write("Unesi udaljenost putovanja u km: ");
+        if(int.TryParse(Console.ReadLine(), out distance) && distance > 0)
+            break;
+        Console.WriteLine("Neispravan unos udaljenosti!\n");
+
+    }
+    decimal fuel;
+    while (true)
+    {
+        Console.Write("Unesi potrošeno gorivo: ");
+        if (decimal.TryParse(Console.ReadLine(), out fuel) && fuel > 0)
+            break;
+        Console.WriteLine("Neispravan unos goriva!\n");
+
+    }
+    decimal fuelPricePerLiter;
+    while (true)
+    {
+        Console.Write("Unesi cijenu goriva po litri: ");
+        if (decimal.TryParse(Console.ReadLine(), out fuelPricePerLiter) && fuelPricePerLiter > 0)
+            break;
+        Console.WriteLine("Neispravan unos cijene goriva!\n");
+    }
+
+    decimal totalCost = fuel * fuelPricePerLiter;
+    trips[newID] = (tripDate, distance, fuel, fuelPricePerLiter, totalCost);
+    Console.WriteLine("Novo putovanje dodano.");
     Console.Write("Pristisnite bilo koju tipku za nastavak...");
     Console.ReadKey();
     Console.Clear();
