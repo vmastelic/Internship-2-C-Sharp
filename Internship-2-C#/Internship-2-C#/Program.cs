@@ -212,6 +212,7 @@ void deleteUserMenu()
         }
         else if (deleteChoice == "0") break;
     }
+    Console.Clear();
 }
 void deleteUserNameSurname(Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
 {
@@ -322,6 +323,7 @@ void tripsMenu()
         Console.WriteLine("2 - Brisanje putovanja");
         Console.WriteLine("3 - Uređivanje putovanja");
         Console.WriteLine("4 - Pregled svih putovanja");
+        Console.WriteLine("5 - Izvještaji i analize");
         Console.WriteLine("0 - Povratak na glavni izbornik");
         Console.Write("\nOdabir: ");
         var tripsMenuChoice = Console.ReadLine();
@@ -329,12 +331,92 @@ void tripsMenu()
         else if (tripsMenuChoice == "2") deleteTripsMenu();
         else if (tripsMenuChoice == "3") modifyTrip(trips);
         else if (tripsMenuChoice == "4") printTripsMenu();
+        else if(tripsMenuChoice == "5") analyseTrips(trips, users);
         else if (tripsMenuChoice == "0") break;
     }
     return;
 }
+void analyseTrips(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)> trips,
+    Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
+{
+    Console.Clear();
+    Console.Write("Unesi ID korisnika za kojeg želiš izvještaj: ");
+    if(!int.TryParse(Console.ReadLine(), out int userID) || !users.ContainsKey(userID))
+    {
+        Console.WriteLine("Neispravan unos ID-ja.");
+        Console.WriteLine("Pritisnite bilo koju tipku za nastavak...");
+        Console.ReadKey();
+        return;
+    }
+    var user = users[userID];
+    if(user.tripsID.Count == 0)
+    {
+        Console.WriteLine("Korisinik nema putovanja.");
+        Console.WriteLine("Pritisnite bilo koju tipku za nastavak...");
+        Console.ReadKey();
+        return;
+    }
+
+    decimal totalFuel = 0;
+    decimal totalCost = 0;
+    int totalDistance = 0;
+    int maxFuelTripID = 0;
+    decimal maxFuel = 0;
+
+    foreach (var tripID in user.tripsID)
+    {
+        var trip = trips[tripID];
+        totalFuel += trip.fuel;
+        totalCost += trip.totalCost;
+        totalDistance += trip.distance;
+
+        if(trip.fuel > maxFuel)
+        {
+            maxFuel = trip.fuel;
+            maxFuelTripID = tripID;
+        }
+    }
+    decimal avgerageFuel = totalDistance > 0 ? (totalFuel / totalDistance) * 100 : 0;
+    Console.Clear();
+    Console.WriteLine($"Izvještaj za korisnika {users[userID].name} {users[userID].surname}:");
+    Console.WriteLine($"Ukupna potrošnja goriva:       {totalFuel} L");
+    Console.WriteLine($"Ukupni troškovi goriva:        {totalCost} EUR");
+    Console.WriteLine($"Prosječna potrošnja (L/100km): {avgerageFuel:F2}\n");
+
+    var maxFuelTrip = trips[maxFuelTripID];
+    Console.WriteLine("Putovanje s najvećom potrošnjom goriva: ");
+    Console.WriteLine("Putovanje #{0}", maxFuelTripID);
+    Console.WriteLine($"Datum: {maxFuelTrip.tripDate:yyyy-MM-dd}");
+    Console.WriteLine($"Kilometri: {maxFuelTrip.distance}km");
+    Console.WriteLine($"Gorivo: {maxFuelTrip.fuel} L");
+    Console.WriteLine($"Cijena po litri: {maxFuelTrip.fuelPricePerLiter} EUR/L");
+    Console.WriteLine($"Ukupno: {maxFuelTrip.totalCost} EUR\n");
+
+    Console.Write("Unesi datum za pregled putovanja (yyyy-mm-dd): ");
+    if(DateTime.TryParse(Console.ReadLine(), out DateTime tripDateFilter))
+    {
+        Console.WriteLine("\nPutovanja toga dana: ");
+        bool found = false;
+        foreach (int tripID in user.tripsID)
+        {
+            var trip = trips[tripID];
+            if (trip.tripDate.Date == tripDateFilter.Date)
+            {
+                Console.WriteLine($"  ID: {tripID}, {trip.tripDate:yyyy-MM-dd}, {trip.distance} km, {trip.fuel} L, {trip.totalCost} EUR");
+                found = true;
+            }
+        }
+        if(!found) Console.WriteLine("Nema putovanja na taj dan.");
+    }
+    else Console.WriteLine("Neispravan unos datuma");
+
+    Console.Write("Pritisni bilo koju tipku za nastavak...");
+    Console.ReadKey();
+    Console.Clear();
+}
 void printTripsMenu()
 {
+    Console.Clear();
     Console.WriteLine("\n1 - Sva putovanja redom kako su spremljena");
     Console.WriteLine("2 - Sva putovanja sortirana po trošku uzlazno");
     Console.WriteLine("3 - Sva  putovanja sortirana po trošku silazno");
@@ -381,6 +463,7 @@ void printTrips(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, 
     Console.Write("Pritisni bilo koju tipku za nastavak...");
     Console.ReadKey();
     Console.Clear();
+
 }
 void addTrip(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, decimal fuelPricePerLiter, decimal totalCost)> trips,
     Dictionary<int, (string name, string surname, DateTime birthDate, List<int> tripsID)> users)
@@ -520,13 +603,11 @@ void deleteTripsByCost(
         foreach(var tripID in deletionIDs)
         {
             foreach(var user in users)
-            {
                 if (user.Value.tripsID.Contains(tripID))
                 {
                     user.Value.tripsID.Remove(tripID);
                     break;
                 }
-            }
             trips.Remove(tripID);
         }
         Console.WriteLine($"\nObrisano {deletionIDs.Count} putovanja.");
@@ -657,3 +738,4 @@ void modifyTrip(Dictionary<int, (DateTime tripDate, int distance, decimal fuel, 
     Console.ReadKey();
     Console.Clear();
 }
+
